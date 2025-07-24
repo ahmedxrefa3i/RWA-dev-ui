@@ -1,187 +1,102 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rico Secure Front</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #111;
-      color: white;
-    }
-    .blackout {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: black;
-      z-index: 9999999;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rico World - Access Portal</title>
+  <meta name="description" content="Rico World platform for accessing protected content" />
+  <meta name="keywords" content="Rico World, Gaming, Access Codes" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <script src="js/utils.js"></script>
+  <script src="js/secure-api.js"></script>
+  <script src="js/main-secure.js"></script>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body>
-  <div class="blackout" id="blackout"></div>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <div class="logo-circle"><span>RW</span></div>
+      </div>
+      <div class="loading-text">
+        <h2>RICO WORLD</h2>
+        <p>Loading...</p>
+      </div>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container" id="mainContainer">
+    <div class="container">
+      <div class="title-section">
+        <h1 class="main-title">WELCOME TO RICO WORLD</h1>
+        <p class="subtitle">Enter access code to continue</p>
+      </div>
+      <div class="access-form">
+        <div class="input-container">
+          <div class="input-wrapper">
+            <input type="password" id="passwordInput" placeholder="Enter Access Code" autocomplete="off" />
+            <div class="input-border"></div>
+            <div class="input-glow"></div>
+          </div>
+          <button class="access-btn" onclick="checkPassword()">
+            <span class="btn-text">Activate Access</span>
+            <div class="btn-glow"></div>
+            <i class="fas fa-arrow-right btn-icon"></i>
+          </button>
+        </div>
+        <div id="messageContainer" class="message-container">
+          <div id="errorMsg" class="message error-msg" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="message-text"></span>
+          </div>
+          <div id="successMsg" class="message success-msg" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <span class="message-text"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <iframe id="contentFrame" title="Protected Content" allowfullscreen style="width: 100vw; height: 100dvh; border: none; position: fixed; top: 0; left: 0; z-index: 9999; display: none;"></iframe>
+  <div id="notificationContainer" class="notification-container"></div>
 
   <script>
-    // شاشة سوداء عند فقد الاتصال
-    function checkConnection() {
-      const blackout = document.getElementById("blackout");
-      if (!navigator.onLine) {
-        blackout.style.display = "block";
-      } else {
-        blackout.style.display = "none";
-      }
+    document.addEventListener("DOMContentLoaded", () => {
+      if (navigator.onLine === false) showOfflineScreen();
+      window.addEventListener("offline", showOfflineScreen);
+    });
+
+    function showOfflineScreen() {
+      if (document.getElementById("offlineOverlay")) return;
+      const offlineOverlay = document.createElement("div");
+      offlineOverlay.id = "offlineOverlay";
+      offlineOverlay.style.position = "fixed";
+      offlineOverlay.style.top = "0";
+      offlineOverlay.style.left = "0";
+      offlineOverlay.style.width = "100vw";
+      offlineOverlay.style.height = "100vh";
+      offlineOverlay.style.backgroundColor = "black";
+      offlineOverlay.style.color = "white";
+      offlineOverlay.style.display = "flex";
+      offlineOverlay.style.alignItems = "center";
+      offlineOverlay.style.justifyContent = "center";
+      offlineOverlay.style.fontSize = "1.8rem";
+      offlineOverlay.style.zIndex = "999999";
+      offlineOverlay.innerText = "\u{1F6AB} Connection lost! Please reload the page.";
+      document.body.appendChild(offlineOverlay);
     }
-    window.addEventListener("online", checkConnection);
-    window.addEventListener("offline", checkConnection);
-    checkConnection();
-  </script>
-
-  <script>
-    // إزالة حماية DevTools
-    (() => {
-      const devtools = () => {
-        const threshold = 160;
-        const start = new Date();
-        debugger;
-        const end = new Date();
-        if (end - start > threshold) {
-          window.location.href = "about:blank";
-        }
-      };
-      setInterval(devtools, 1000);
-    })();
-  </script>
-
-  <script>
-    // سكربت HENSHIN_CHARGE
-    (function () {
-      const propName = "henshin_charge";
-      const multiplier = 10;
-      let active = false;
-      const originalValues = new WeakMap();
-
-      function isNumeric(val) {
-        return typeof val === "number" && isFinite(val);
-      }
-
-      function log(msg, color = "cyan") {
-        console.log(`%c[HENSHIN_CHARGE] ${msg}`, `color:${color}; font-weight:bold;`);
-      }
-
-      function deepScan(obj, visited = new WeakSet()) {
-        if (!active || visited.has(obj) || typeof obj !== "object" || obj === null) return;
-        visited.add(obj);
-
-        for (const key in obj) {
-          try {
-            const val = obj[key];
-            if (typeof val === "object" && val !== null) {
-              deepScan(val, visited);
-            }
-
-            if (isNumeric(val) && key.toLowerCase().includes(propName)) {
-              if (!originalValues.has(obj)) originalValues.set(obj, {});
-              const objOriginals = originalValues.get(obj);
-              if (!objOriginals.hasOwnProperty(key)) {
-                objOriginals[key] = val;
-                obj[key] = val * multiplier;
-                log(`✅ ${key}: ${val} → ${obj[key]}`, "lime");
-              }
-            }
-          } catch {}
-        }
-      }
-
-      // واجهة المستخدم
-      const panel = document.createElement("div");
-      panel.style.cssText = `
-        position:fixed; top:20px; left:20px; z-index:999999;
-        background:#003366; color:white; padding:10px;
-        border-radius:8px; box-shadow:0 0 10px #000;
-        font-family:sans-serif; font-size:12px;
-        width:220px;
-      `;
-
-      const header = document.createElement("div");
-      header.textContent = "⚡ Henshin Charge";
-      header.style.cssText = `
-        font-weight:bold; background:#005599; padding:5px;
-        cursor:move; text-align:center; border-radius:5px;
-      `;
-      panel.appendChild(header);
-
-      const status = document.createElement("div");
-      status.textContent = "❌ غير مفعل";
-      status.style.cssText = "text-align:center; margin:6px 0; font-weight:bold;";
-      panel.appendChild(status);
-
-      const toggleBtn = document.createElement("button");
-      toggleBtn.textContent = "تشغيل / إيقاف";
-      toggleBtn.style.cssText = `
-        width:100%; padding:6px; font-size:13px; border:none;
-        border-radius:5px; background:#0066cc; color:white;
-        cursor:pointer; font-weight:bold;
-      `;
-      toggleBtn.onclick = () => {
-        active = !active;
-        if (active) {
-          status.textContent = "✅ مفعل";
-          status.style.color = "lime";
-          log(`تفعيل تعديل ${propName}`, "aqua");
-        } else {
-          status.textContent = "❌ غير مفعل";
-          status.style.color = "red";
-          log(`إيقاف تعديل ${propName}`, "orange");
-        }
-      };
-      panel.appendChild(toggleBtn);
-
-      const footer = document.createElement("div");
-      footer.style.cssText = "text-align:right; margin-top:6px;";
-      footer.innerHTML = `
-        <button id="minBtn">🗕</button>
-        <button id="closeBtn">❌</button>
-      `;
-      panel.appendChild(footer);
-      document.body.appendChild(panel);
-
-      // سحب النافذة
-      let isDragging = false, offsetX = 0, offsetY = 0;
-      header.onmousedown = e => {
-        isDragging = true;
-        offsetX = e.clientX - panel.offsetLeft;
-        offsetY = e.clientY - panel.offsetTop;
-        document.onmousemove = e2 => {
-          if (isDragging) {
-            panel.style.left = `${e2.clientX - offsetX}px`;
-            panel.style.top = `${e2.clientY - offsetY}px`;
-          }
-        };
-        document.onmouseup = () => {
-          isDragging = false;
-          document.onmousemove = null;
-        };
-      };
-
-      // تصغير
-      let minimized = false;
-      document.getElementById("minBtn").onclick = () => {
-        minimized = !minimized;
-        toggleBtn.style.display = minimized ? "none" : "block";
-        status.style.display = minimized ? "none" : "block";
-        footer.style.textAlign = minimized ? "center" : "right";
-      };
-
-      // إغلاق
-      document.getElementById("closeBtn").onclick = () => panel.remove();
-
-      // المراقبة المستمرة
-      setInterval(() => {
-        if (active) deepScan(window);
-      }, 2000);
-    })();
   </script>
 </body>
 </html>
