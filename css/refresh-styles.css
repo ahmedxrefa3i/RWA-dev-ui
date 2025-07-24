@@ -1,0 +1,123 @@
+/* Refresh Button Styles */
+.refresh-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-medium);
+    transition: all var(--transition-medium);
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.refresh-btn.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.refresh-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-glow);
+}
+
+.refresh-btn:hover i {
+    animation: spin 0.5s ease-in-out;
+}
+
+.refresh-btn i {
+    color: var(--primary-dark);
+    font-size: 14px;
+    transition: all var(--transition-fast);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Content Section Styles */
+.content-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-dark);
+    z-index: 1000;
+}
+
+.content-section iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--primary-dark);
+}
+
+/* Access Section Styles */
+.access-section {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10001;
+    transform: translateX(100%);
+    transition: transform var(--transition-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: linear-gradient(135deg, var(--brand-success), #00cc66);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, var(--brand-error), #cc0000);
+}
+
+.notification.info {
+    background: linear-gradient(135deg, var(--brand-secondary), #4752c4);
+}
+
+/* Responsive Design for Refresh Button */
+@media (max-width: 768px) {
+    .refresh-btn {
+        width: 30px;
+        height: 30px;
+        top: 15px;
+        left: 15px;
+    }
+    
+    .refresh-btn i {
+        font-size: 12px;
+    }
+}
+
