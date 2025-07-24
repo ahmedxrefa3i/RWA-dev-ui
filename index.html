@@ -1,56 +1,187 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>RWA DEV TOOL</title>
-  <link rel="icon" type="image/png" href="images/ico.png" />
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rico Secure Front</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+    }
+    .blackout {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: black;
+      z-index: 9999999;
+    }
+  </style>
 </head>
 <body>
-  <div class="box">
-    <h2>ادخل الكود الخاص بك</h2>
-    <input type="text" id="password" placeholder="********" required />
-    <a href="#" id="submit">دخول</a>
-    <p id="status"></p>
-  </div>
+  <div class="blackout" id="blackout"></div>
 
   <script>
-    document.getElementById("submit").addEventListener("click", async function (e) {
-      e.preventDefault();
-      const password = document.getElementById("password").value.trim();
-      const status = document.getElementById("status");
-      status.innerText = "جاري التحقق...";
-
-      try {
-        const res = await fetch("https://rico-secure-backend.onrender.com/check-dev-code", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code: password })
-        });
-
-        const data = await res.json();
-
-        if (!data.allowed) {
-          status.innerText = "❌ الكود غير صالح أو مرفوض";
-          return;
-        }
-
-        status.innerText = "✅ تم التحقق بنجاح... جارٍ تحميل الأداة";
-
-        const script = document.createElement("script");
-        script.src = data.url;
-        script.onload = () => console.log("[DEV-INJECT] تم تحميل الأداة");
-        document.body.appendChild(script);
-      } catch (err) {
-        console.error(err);
-        status.innerText = "حدث خطأ في الاتصال بالخادم.";
+    // شاشة سوداء عند فقد الاتصال
+    function checkConnection() {
+      const blackout = document.getElementById("blackout");
+      if (!navigator.onLine) {
+        blackout.style.display = "block";
+      } else {
+        blackout.style.display = "none";
       }
-    });
+    }
+    window.addEventListener("online", checkConnection);
+    window.addEventListener("offline", checkConnection);
+    checkConnection();
   </script>
 
+  <script>
+    // إزالة حماية DevTools
+    (() => {
+      const devtools = () => {
+        const threshold = 160;
+        const start = new Date();
+        debugger;
+        const end = new Date();
+        if (end - start > threshold) {
+          window.location.href = "about:blank";
+        }
+      };
+      setInterval(devtools, 1000);
+    })();
+  </script>
+
+  <script>
+    // سكربت HENSHIN_CHARGE
+    (function () {
+      const propName = "henshin_charge";
+      const multiplier = 10;
+      let active = false;
+      const originalValues = new WeakMap();
+
+      function isNumeric(val) {
+        return typeof val === "number" && isFinite(val);
+      }
+
+      function log(msg, color = "cyan") {
+        console.log(`%c[HENSHIN_CHARGE] ${msg}`, `color:${color}; font-weight:bold;`);
+      }
+
+      function deepScan(obj, visited = new WeakSet()) {
+        if (!active || visited.has(obj) || typeof obj !== "object" || obj === null) return;
+        visited.add(obj);
+
+        for (const key in obj) {
+          try {
+            const val = obj[key];
+            if (typeof val === "object" && val !== null) {
+              deepScan(val, visited);
+            }
+
+            if (isNumeric(val) && key.toLowerCase().includes(propName)) {
+              if (!originalValues.has(obj)) originalValues.set(obj, {});
+              const objOriginals = originalValues.get(obj);
+              if (!objOriginals.hasOwnProperty(key)) {
+                objOriginals[key] = val;
+                obj[key] = val * multiplier;
+                log(`✅ ${key}: ${val} → ${obj[key]}`, "lime");
+              }
+            }
+          } catch {}
+        }
+      }
+
+      // واجهة المستخدم
+      const panel = document.createElement("div");
+      panel.style.cssText = `
+        position:fixed; top:20px; left:20px; z-index:999999;
+        background:#003366; color:white; padding:10px;
+        border-radius:8px; box-shadow:0 0 10px #000;
+        font-family:sans-serif; font-size:12px;
+        width:220px;
+      `;
+
+      const header = document.createElement("div");
+      header.textContent = "⚡ Henshin Charge";
+      header.style.cssText = `
+        font-weight:bold; background:#005599; padding:5px;
+        cursor:move; text-align:center; border-radius:5px;
+      `;
+      panel.appendChild(header);
+
+      const status = document.createElement("div");
+      status.textContent = "❌ غير مفعل";
+      status.style.cssText = "text-align:center; margin:6px 0; font-weight:bold;";
+      panel.appendChild(status);
+
+      const toggleBtn = document.createElement("button");
+      toggleBtn.textContent = "تشغيل / إيقاف";
+      toggleBtn.style.cssText = `
+        width:100%; padding:6px; font-size:13px; border:none;
+        border-radius:5px; background:#0066cc; color:white;
+        cursor:pointer; font-weight:bold;
+      `;
+      toggleBtn.onclick = () => {
+        active = !active;
+        if (active) {
+          status.textContent = "✅ مفعل";
+          status.style.color = "lime";
+          log(`تفعيل تعديل ${propName}`, "aqua");
+        } else {
+          status.textContent = "❌ غير مفعل";
+          status.style.color = "red";
+          log(`إيقاف تعديل ${propName}`, "orange");
+        }
+      };
+      panel.appendChild(toggleBtn);
+
+      const footer = document.createElement("div");
+      footer.style.cssText = "text-align:right; margin-top:6px;";
+      footer.innerHTML = `
+        <button id="minBtn">🗕</button>
+        <button id="closeBtn">❌</button>
+      `;
+      panel.appendChild(footer);
+      document.body.appendChild(panel);
+
+      // سحب النافذة
+      let isDragging = false, offsetX = 0, offsetY = 0;
+      header.onmousedown = e => {
+        isDragging = true;
+        offsetX = e.clientX - panel.offsetLeft;
+        offsetY = e.clientY - panel.offsetTop;
+        document.onmousemove = e2 => {
+          if (isDragging) {
+            panel.style.left = `${e2.clientX - offsetX}px`;
+            panel.style.top = `${e2.clientY - offsetY}px`;
+          }
+        };
+        document.onmouseup = () => {
+          isDragging = false;
+          document.onmousemove = null;
+        };
+      };
+
+      // تصغير
+      let minimized = false;
+      document.getElementById("minBtn").onclick = () => {
+        minimized = !minimized;
+        toggleBtn.style.display = minimized ? "none" : "block";
+        status.style.display = minimized ? "none" : "block";
+        footer.style.textAlign = minimized ? "center" : "right";
+      };
+
+      // إغلاق
+      document.getElementById("closeBtn").onclick = () => panel.remove();
+
+      // المراقبة المستمرة
+      setInterval(() => {
+        if (active) deepScan(window);
+      }, 2000);
+    })();
+  </script>
 </body>
 </html>
