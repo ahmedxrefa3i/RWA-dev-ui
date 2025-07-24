@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>RWA DEV TOOL</title>
+  <link rel="icon" type="image/png" href="images/ico.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="box">
+    <h2>ادخل الكود الخاص بك</h2>
+    <input type="text" id="password" placeholder="********" required />
+    <a href="#" id="submit">دخول</a>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    document.getElementById("submit").addEventListener("click", async function (e) {
+      e.preventDefault();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("status");
+      status.innerText = "جاري التحقق...";
+
+      try {
+        const res = await fetch("https://rico-secure-backend.onrender.com/check-dev-code", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code: password })
+        });
+
+        const data = await res.json();
+
+        if (!data.allowed) {
+          status.innerText = "❌ الكود غير صالح أو مرفوض";
+          return;
+        }
+
+        status.innerText = "✅ تم التحقق بنجاح... جارٍ تحميل الأداة";
+
+        const script = document.createElement("script");
+        script.src = data.url;
+        script.onload = () => console.log("[DEV-INJECT] تم تحميل الأداة");
+        document.body.appendChild(script);
+      } catch (err) {
+        console.error(err);
+        status.innerText = "حدث خطأ في الاتصال بالخادم.";
+      }
+    });
+  </script>
+
+</body>
+</html>
